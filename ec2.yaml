@@ -1,0 +1,53 @@
+AWSTemplateFormatVersion: 2010-09-09
+#Resources - what we gonna create
+
+Parameters:
+    MyKeyName:
+        Description: Select the key name from the list
+        Type: AWS::EC2::KeyPair::KeyName
+    MyAvailabilityZone:
+        Description: Select the AZ
+        Type: String
+        Default: us-east-1a
+        AllowedValues:
+            - us-east-1a
+            - us-east-1b
+            - us-east-1c
+    MyInstanceType:
+        Description: Select the EC2 instance type from
+        Type: String
+        Default: t2.micro
+        AllowedValues:
+            - t2.micro
+            - t2.small
+
+Resources:
+    DevEC2Instance: 
+        Type: AWS::EC2::Instance
+        Properties: 
+#Type of AMI        
+            ImageId: "ami-07ebfd5b3428b6f4d"
+#Type of mashine            
+            InstanceType: !Ref MyInstanceType
+#Add existing key            
+            KeyName: !Ref MyKeyName
+#Add existing security group
+            SecurityGroups:
+                - ssh-http
+                - !Ref HTTPSSecurityGroup
+            AvailabilityZone: !Ref MyAvailabilityZone   
+#Create new security group
+    HTTPSSecurityGroup: 
+        Type: AWS::EC2::SecurityGroup
+        Properties:
+            GroupName: HTTPS SG
+            GroupDescription: HTTPS Security Group
+            SecurityGroupIngress:
+                - IpProtocol: tcp
+                  FromPort: '443'
+                  ToPort: '443'
+                  CidrIp: 0.0.0.0/0
+    MyElasticIP: 
+        Type: AWS::EC2::EIP
+        Properties:
+            InstanceId: !Ref DevEC2Instance
